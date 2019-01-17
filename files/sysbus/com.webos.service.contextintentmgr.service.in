@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=com.webos.service.contextintentmgr
+Exec=@WEBOS_INSTALL_BINDIR@/run-js-service -n -k @WEBOS_INSTALL_WEBOS_SERVICESDIR@/com.webos.service.contextintentmgr
+Type=static

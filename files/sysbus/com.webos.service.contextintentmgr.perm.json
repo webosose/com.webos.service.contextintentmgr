@@ -1,0 +1,3 @@
+{
+    "com.webos.service.contextintentmgr": ["public", "activities.callbacks"]
+}

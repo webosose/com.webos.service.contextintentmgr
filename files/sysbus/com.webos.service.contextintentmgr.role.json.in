@@ -1,0 +1,11 @@
+{
+    "appId": "com.webos.service.contextintentmgrd",
+    "allowedNames": ["com.webos.service.contextintentmgrd"],
+    "type": "regular",
+    "permissions": [
+        {
+            "outbound": ["*"],
+            "service": "com.webos.service.contextintentmgr"
+        }
+    ]
+}

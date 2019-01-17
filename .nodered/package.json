@@ -1,0 +1,14 @@
+{
+    "name": "node-red-project",
+    "description": "A Node-RED Project",
+    "version": "0.0.1",
+    "dependencies": {
+        "node-red-contrib-action-handler": "./node_modules/node-red-contrib-action-handler",
+        "node-red-contrib-generate-fact": "./node_modules/node-red-contrib-generate-fact",
+        "node-red-contrib-rule-engine": "./node_modules/node-red-contrib-rule-engine",
+        "node-red-contrib-voice": "./node_modules/node-red-contrib-voice",
+        "node-red-contrib-notifications": "./node_modules/node-red-contrib-notifications",
+        "node-red-contrib-data-inject": "./node_modules/node-red-contrib-data-inject",
+        "node-red-contrib-data-publish": "./node_modules/node-red-contrib-data-publish"
+    }
+}
