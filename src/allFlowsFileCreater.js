@@ -16,17 +16,27 @@
 
 const fs = require("fs-extra");
 
+let writeJSONToDiskSync = (path, JSONData) => {
+    let fd;
+    try {
+        fs.outputJSONSync(path, JSONData);
+        fd = fs.openSync(path, 'rs+');
+        fs.fdatasyncSync(fd);
+        return true;
+    } catch (e) {
+        console.log("Exception in writing file",e);
+        return false;
+    }
+};
 //creates flows.json file
 let createAllFlowFile = (details) => {
     console.log('createAllFlowFile');
     return new Promise((resolve, reject) => {
-        fs.outputJson(details.flowFilePath, details.allFlows, err => {
-            if (err) {
-                reject("Error : Failed to create allFlows json file ");
-            } else {
-                resolve(details);
-            }
-        });
+        if (writeJSONToDiskSync(details.flowFilePath, details.allFlows)) {
+            resolve(details);
+        } else {
+            reject("Error : Failed to create allFlows json file ");
+        }
     });
 }
 //restarts flows by setFlow method
@@ -34,7 +44,7 @@ let restartFlows = (Red, details) => {
     console.log('restartFlows');
     return new Promise((resolve, reject) => {
         if (details.nodeNames && details.installer) {
-            reject("TV needs to restart after customnodes installed");
+            reject("Device needs to restart after customnodes installed");
         } else {
             Red.nodes.setFlows(details.allFlows, "flows");
             resolve(details);

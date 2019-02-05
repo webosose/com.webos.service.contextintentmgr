@@ -17,6 +17,19 @@
 const fs = require("fs-extra"),
     path = require("path");
 
+let writeJSONToDiskSync = (path, JSONData) => {
+    let fd;
+    try {
+        fs.outputJSONSync(path, JSONData);
+        fd = fs.openSync(path, 'rs+');
+        fs.fdatasyncSync(fd);
+        return true;
+    } catch (e) {
+        console.log("Exception in writing file",e);
+        return false;
+    }
+};
+
 let addToPackage = (details) => {
     console.log("addToPackage");
     return new Promise((resolve, reject) => {
@@ -105,14 +118,11 @@ let nodePackageRemove = (details) => {
 let writePackageJson = (details) => {
     console.log("writePackageJson");
     return new Promise((resolve, reject) => {
-        fs.outputJson(details.packagePath, details.nodePackage, err => {
-            if (err) {
-                console.log(err);
-                reject("Error : Failed to recreate a package.json.");
-            } else {
-                resolve(details);
-            }
-        });
+        if (writeJSONToDiskSync(details.packagePath, details.nodePackage)) {
+            resolve(details);
+        } else {
+            reject("Error : Failed to recreate a package.json.");
+        }
     })
 }
 let moveCustomNodes = (details) => {

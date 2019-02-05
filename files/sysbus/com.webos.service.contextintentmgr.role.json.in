@@ -1,6 +1,6 @@
 {
-    "appId": "com.webos.service.contextintentmgrd",
-    "allowedNames": ["com.webos.service.contextintentmgrd"],
+    "appId": "com.webos.service.contextintentmgr",
+    "allowedNames": ["com.webos.service.contextintentmgr"],
     "type": "regular",
     "permissions": [
         {

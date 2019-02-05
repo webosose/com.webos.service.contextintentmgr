@@ -20,7 +20,7 @@ const flowInstaller = require("./flowInstaller.js"),
 
 let initApi = (RED) => {
     // Data injection API in to a flow, from an app
-    RED.settings.webosService.register("dataInjector", (message) => {
+    RED.settings.webosService.register("injectDataToWorkflow", (message) => {
         message.payload.userDir = RED.settings.userDir;
         dynamicDataHandler.dataInjector(message.payload, message.sender, (result) => {
             message.respond(result);
@@ -28,7 +28,7 @@ let initApi = (RED) => {
     });
 
     // Data publisher API from a flow, to an app
-    RED.settings.webosService.register("dataPublisher", (message) => {
+    RED.settings.webosService.register("getDataFromWorkflow", (message) => {
         message.payload.userDir = RED.settings.userDir;
         dynamicDataHandler.dataPublisher(message.payload, message.sender, (result) => {
             result.subscribed = message.isSubscription;

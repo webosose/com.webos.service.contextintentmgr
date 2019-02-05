@@ -1,6 +1,6 @@
 {
     "cim.release": [
-        "com.webos.service.contextintentmgr/dataInjector",
-        "com.webos.service.contextintentmgr/dataPublisher"
+        "com.webos.service.contextintentmgr/injectDataToWorkflow",
+        "com.webos.service.contextintentmgr/getDataFromWorkflow"
     ]
 }

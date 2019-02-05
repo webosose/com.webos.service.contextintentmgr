@@ -76,6 +76,19 @@ let subscribe = (RED) => {
     });
 }
 
+let writeJSONToDiskSync = (path, JSONData) => {
+    let fd;
+    try {
+        fs.outputJSONSync(path, JSONData);
+        fd = fs.openSync(path, 'rs+');
+        fs.fdatasyncSync(fd);
+        return true;
+    } catch (e) {
+        console.log("Exception in writing file", e);
+        return false;
+    }
+};
+
 //get called when state is installed, gets appinfo file from app installed path & trigger promise
 let flowInstaller = (input, callback) => {
     console.log("flowInstaller :");
@@ -89,7 +102,7 @@ let flowInstaller = (input, callback) => {
             "userDir": userDir,
             "installer": true
         };
-        let successMsg = "Flow installation successfull.";
+        let successMsg = "Flow installation successful.";
         if (input[CIM_CUSTOM_NODES_DIR]) {
             flowDetails.customNodeDir = input[CIM_CUSTOM_NODES_DIR];
         }
@@ -104,6 +117,7 @@ let flowInstaller = (input, callback) => {
                 callback(result);
             } else {
                 if (err) {
+                    console.log("ERROR LOG ..............", err)
                     logToPath(logPath, true, err);
                 } else {
                     successMsg = input.packageId + " : " + successMsg;
@@ -258,13 +272,11 @@ let commonPromises = (flowDetails) => {
 let createJSON = (flowDetails) => {
     return new Promise((resolve, reject) => {
         let allPath = userDir + '/allFlows/' + flowDetails.packageId + ".json";
-        fs.outputJson(allPath, flowDetails.flowData, err => {
-            if (err) {
-                reject("Error : Failed to create a json : " + allPath);
-            } else {
-                resolve(flowDetails);
-            }
-        });
+        if (writeJSONToDiskSync(allPath, flowDetails.flowData)) {
+            resolve(flowDetails);
+        } else {
+            reject("Error : Failed to create a json : " + allPath);
+        }
     });
 }
 //will remove "appId".json from .nodered/allFlows directory
@@ -310,10 +322,11 @@ let addToManifest = (flowDetails) => {
         if (flowDetails.customNodeDir) {
             file[appName].customNodes = flowDetails.nodeNames;
         }
-        fs.writeFile(fileName, JSON.stringify(file), (err) => {
-            if (err) console.log(err);
+        if (writeJSONToDiskSync(fileName, file)) {
             resolve(flowDetails);
-        });
+        } else {
+            reject("Error : Failed to create a json : " + allPath);
+        }
     });
 }
 //reads manifest file in .nodered dir removes uninstalled app entry and saves
@@ -327,10 +340,11 @@ let removeFromManifest = (flowDetails) => {
                 flowDetails.nodeNames = file[appName].customNodes;
             }
             delete file[appName];
-            fs.writeFile(fileName, JSON.stringify(file), (err) => {
-                if (err) console.log(err);
+            if (writeJSONToDiskSync(fileName, file)) {
                 resolve(flowDetails);
-            });
+            } else {
+                reject("Error : Failed to create a json : " + allPath);
+            }
         } else {
             reject("Error : No entry in manifest file found...");
         }
@@ -363,22 +377,23 @@ let concatFlows = (flowDetails) => {
         let allPath = userDir + '/allFlows/';
         let allFlows = [];
         try {
-            fs.readdir(allPath, (err, flows) => {
-                if (flows && flows.length > 0) {
-                    let itemsProcessed = 0;
-                    let appid,
-                        manifestFilePath = userDir + "/" + MANIFEST_FILE,
-                        manifestObj = {};
-                    try {
-                        manifestObj = fs.readJsonSync(manifestFilePath);
-                    } catch (e) {
-                        manifestObj = {};
-                    }
-                    flows.forEach((flow, index, array) => {
-                        appid = flow.replace(".json", "");
-                        let obj = fs.readJsonSync(allPath + flow)
-                        if (obj != null) {
-                            let disabledArr, alwaysDisabledArr;
+            let flows = fs.readdirSync(allPath);
+            if (flows && flows.length > 0) {
+                let itemsProcessed = 0;
+                let appid,
+                    manifestFilePath = userDir + "/" + MANIFEST_FILE,
+                    manifestObj = {};
+                try {
+                    manifestObj = fs.readJsonSync(manifestFilePath);
+                } catch (e) {
+                    manifestObj = {};
+                }
+                flows.forEach((flow, index, array) => {
+                    appid = flow.replace(".json", "");
+                    let obj = fs.readJsonSync(allPath + flow)
+                    if (obj != null) {
+                        let disabledArr, alwaysDisabledArr;
+                        if (manifestObj[appid]) {
                             disabledArr = manifestObj[appid].disabled;
                             alwaysDisabledArr = manifestObj[appid].alwaysDisabled;
                             for (let f = 0, fMax = obj.length; f < fMax; f++) {
@@ -401,18 +416,21 @@ let concatFlows = (flowDetails) => {
                             manifestObj[appid].disabled = disabledArr;
                             manifestObj[appid].alwaysDisabled = alwaysDisabledArr;
                             allFlows = allFlows.concat(obj);
-                        } else {
-                            console.log('Error : Invalid flowFile', flow);
                         }
-                    });
-                    flowDetails.allFlows = allFlows;
-                    fs.outputJsonSync(manifestFilePath, manifestObj);
+                    } else {
+                        console.log('Error : Invalid flowFile', flow);
+                    }
+                });
+                flowDetails.allFlows = allFlows;
+                if (writeJSONToDiskSync(manifestFilePath, manifestObj)) {
                     resolve(flowDetails);
                 } else {
-                    flowDetails.allFlows = []; //if no flows exists then pass empty array
-                    resolve(flowDetails);
+                    reject("Error : create concatFlows");
                 }
-            });
+            } else {
+                flowDetails.allFlows = []; //if no flows exists then pass empty array
+                resolve(flowDetails);
+            }
         } catch (e) {
             reject("Error : concatFlows failed due to ", e);
         }

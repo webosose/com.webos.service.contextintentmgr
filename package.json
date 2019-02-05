@@ -8,8 +8,8 @@
         "node-red",
         "node-red CIM"
     ],
-    "author": "SDK-LGSI",
-    "license": "BSD",
+    "author": "LG Electronics",
+    "license": "Apache-2.0",
     "dependencies": {
         "fs-extra": "^7.0.0",
         "pubsub-js": "^1.7.0"

@@ -63,7 +63,7 @@ var validateInput = (input, appId, api_type) => {
                         resolve(input);
                     }
                 } else {
-                    reject("Wrong key in the request.");
+                    reject("Caller does not have permission for this API.");
                 }
             } else {
                 reject("Caller does not have permission for this API.");
