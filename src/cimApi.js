@@ -14,13 +14,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-const flowInstaller = require("./flowInstaller.js"),
-    dynamicDataHandler = require("./dynamicDataHandler.js");
-
+const dynamicDataHandler = require("./dynamicDataHandler.js");
 
 let initApi = (RED) => {
     // Data injection API in to a flow, from an app
-    RED.settings.webosService.register("injectDataToWorkflow", (message) => {
+    process.service.register("injectDataToWorkflow", (message) => {
         message.payload.userDir = RED.settings.userDir;
         dynamicDataHandler.dataInjector(message.payload, message.sender, (result) => {
             message.respond(result);
@@ -28,7 +26,7 @@ let initApi = (RED) => {
     });
 
     // Data publisher API from a flow, to an app
-    RED.settings.webosService.register("getDataFromWorkflow", (message) => {
+    process.service.register("getDataFromWorkflow", (message) => {
         message.payload.userDir = RED.settings.userDir;
         dynamicDataHandler.dataPublisher(message.payload, message.sender, (result) => {
             result.subscribed = message.isSubscription;

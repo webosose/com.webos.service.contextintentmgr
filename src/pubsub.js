@@ -16,6 +16,7 @@
 
 (function () {
     var instance = require('pubsub-js');
+    instance.localStorage = {};
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = instance;
     }

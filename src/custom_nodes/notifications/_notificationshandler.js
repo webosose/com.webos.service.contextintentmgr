@@ -21,7 +21,7 @@ module.exports = class notificationLogic {
     }
     toast() {
         return new Promise(function (resolve, reject) {
-            this.service.call('luna://com.webos.notification/createToast', {
+            process.service.call('luna://com.webos.notification/createToast', {
                     "sourceId": "com.webos.service.contextintentmgr",
                     "message": this.config.message
                 },

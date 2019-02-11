@@ -77,8 +77,12 @@ var validateInput = (input, appId, api_type) => {
 var publishDataForInjection = (input) => {
     return new Promise((resolve, reject) => {
         try {
-            _pubsub.publish(input.subscriptionKey, input);
-            resolve({ "data": input.data });
+            if (!_pubsub.publish(input.subscriptionKey, input)) {
+                _pubsub.localStorage[input.subscriptionKey] = input;
+            };
+            resolve({
+                "data": input.data
+            });
         } catch (e) {
             reject("Could not inject data: " + e.message);
         }
@@ -106,7 +110,7 @@ var dataPublisher = (input, appId, callback) => {
     validateInput(input, appId, "publisher")
         //.then(subscribeForPublishData)
         .then((result) => {
-            flowEnabler.setPublisherAppId(appId);//This is added, to disable pubsub on app close
+            flowEnabler.setPublisherAppId(appId); //This is added, to disable pubsub on app close
             _pubsub.subscribe(input.subscriptionKey, (key, data) => {
                 let result = {
                     "data": data

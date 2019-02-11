@@ -22,7 +22,6 @@ const Logger = require('./util/logger').Logger,
     cimApi = require("./src/cimApi.js");
 
 process.title = "contextintentmgr";
-let service = new WebosService(_package.name);
 let logger = new Logger(process.title);
 let settings = {
     SKIP_BUILD_CHECK: true,
@@ -37,7 +36,6 @@ let settings = {
     functionGlobalContext: {},
     httpAdminRoot: false,
     httpNodeRoot: false,
-    webosService: service,
     flowFile: 'flows.json',
     LOG: logger
 };
@@ -45,12 +43,14 @@ let settings = {
 RED.init(undefined, settings);
 
 RED.start().then(() => {
-    flowInstaller.subscribe(RED); // Subscribe for appInstallService for merging flows of all apps.
+    console.log("<<<<<<<<<<<<<<<<<<<<< REGISTER SERVICE >>>>>>>>>>>>>>>>>>>>");
+    process.service = new WebosService(_package.name);
     cimApi.initApi(RED); // All routs are required here
+    flowInstaller.subscribe(RED); // Subscribe for appInstallService for merging flows of all apps.
 });
 
 let stopAi = () => {
-    service.call("luna://com.webos.service.ai.voice/stop", {
+    process.service.call("luna://com.webos.service.ai.voice/stop", {
         "mode": "continuous",
         "keywordDetect": true
     });

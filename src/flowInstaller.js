@@ -40,7 +40,7 @@ let subscribe = (RED) => {
     userDir = RED.settings.userDir;
     flowFile = RED.settings.flowFile;
     Red = RED;
-    let subscribeAppInstall = RED.settings.webosService.subscribe('luna://com.webos.appInstallService/status', params);
+    let subscribeAppInstall = process.service.subscribe('luna://com.webos.appInstallService/status', params);
     flowEnabler.subscribe(RED); //will subscribe for applicationManager to get running app info
     createNewCombinedFlow({}); // one time step to re create flow file on start of the service
     logFolder = path.join(userDir, "logs");
@@ -51,17 +51,28 @@ let subscribe = (RED) => {
             let details = response.payload.details;
             logPath = path.join(logFolder, details.packageId + ".log");
             if (details.state == "installed") {
-                let appPath = path.join(APP_DEFAULT_PATH, details.packageId);
-                let appInfo = fs.readJsonSync(path.join(appPath, "appinfo.json"));
-                if (appInfo && typeof appInfo[CIM_FLOW_FILE] != "undefined") {
-                    appInfo[CIM_FLOW_FILE] = path.join(appPath, appInfo[CIM_FLOW_FILE]);
-                    appInfo.install = true;
-                    appInfo.packageId = details.packageId;
-                    if (appInfo[CIM_CUSTOM_NODES_DIR]) {
-                        appInfo[CIM_CUSTOM_NODES_DIR] = path.join(appPath, appInfo[CIM_CUSTOM_NODES_DIR]);
+                let appPath = path.join(APP_DEFAULT_PATH, details.packageId),
+                    appInfo = {},
+                    listApps;
+                process.service.call("luna://com.webos.applicationManager/dev/listApps", {
+                    "properties": [CIM_FLOW_FILE, CIM_CUSTOM_NODES_DIR]
+                }, (response) => {
+                    if (response.payload.returnValue) {
+                        listApps = response.payload.apps;
+                        for (let i = 0, iMax = listApps.length; i < iMax; i++) {
+                            if (listApps[i].id === details.packageId && listApps[i][CIM_FLOW_FILE]) {
+                                appInfo[CIM_FLOW_FILE] = path.join(appPath, listApps[i][CIM_FLOW_FILE]);
+                                appInfo.install = true;
+                                appInfo.packageId = details.packageId;
+                                if (listApps[i][CIM_CUSTOM_NODES_DIR]) {
+                                    appInfo[CIM_CUSTOM_NODES_DIR] = path.join(appPath, listApps[i][CIM_CUSTOM_NODES_DIR]);
+                                }
+                                break;
+                            }
+                        }
+                        flowInstaller(appInfo);
                     }
-                    flowInstaller(appInfo);
-                }
+                });
             } else if (details.state == "removed") {
                 removeFlow(details.packageId);
             } else if (details.state == "app closing") {

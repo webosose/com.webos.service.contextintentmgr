@@ -24,5 +24,9 @@ module.exports = class DataInjector {
     }
     subscribe(subscriber) {
         pubsub_subscriber.subscribe(this.subscriptionKey, subscriber);
+        for (let key in pubsub_subscriber.localStorage) {
+            pubsub_subscriber.publish(key, pubsub_subscriber.localStorage[key]);
+            delete pubsub_subscriber.localStorage[key];
+        }
     }
 }

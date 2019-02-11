@@ -38,7 +38,7 @@ module.exports = function (RED, msg, node) {
             message.prevPayload = msg.payload;
         }
     }
-    RED.settings.webosService.call("luna://com.webos.applicationManager/" + node.nodetype, {
+    process.service.call("luna://com.webos.applicationManager/" + node.nodetype, {
         "id": node.appId,
         "params": message
     }, (response) => {});

@@ -25,7 +25,7 @@ let writeJSONToDiskSync = (path, JSONData) => {
         fs.fdatasyncSync(fd);
         return true;
     } catch (e) {
-        console.log("Exception in writing file",e);
+        console.log("Exception in writing file", e);
         return false;
     }
 };
@@ -37,7 +37,7 @@ let addToPackage = (details) => {
             .then(readPackageJson)
             .then(nodePackageEntry)
             .then(writePackageJson)
-            .then(moveCustomNodes)
+            .then(linkCustomNodes)
             .then((details) => {
                 resolve(details);
             })
@@ -53,7 +53,7 @@ let removeFromPackage = (details) => {
             readPackageJson(details)
                 .then(nodePackageRemove)
                 .then(writePackageJson)
-                .then(removeCustomNodes)
+                .then(unlinkCustomNodes)
                 .then((details) => {
                     resolve(details);
                 })
@@ -125,25 +125,30 @@ let writePackageJson = (details) => {
         }
     })
 }
-let moveCustomNodes = (details) => {
-    console.log("moveCustomNodes");
+let linkCustomNodes = (details) => {
+    console.log("linkCustomNodes");
     return new Promise((resolve, reject) => {
         details.customNodes.forEach((nodes) => {
-            fs.move(nodes.path, path.join(details.userDir, "node_modules", nodes.name), err => {
-                if (err) {
-                    console.log(err);
-                    reject("Error : Moving Custom Node failed for " + nodes.name);
-                }
-            });
+            try {
+                fs.symlinkSync(nodes.path, path.join(details.userDir, "node_modules", nodes.name));
+            } catch (err) {
+                console.log(err);
+                reject("Error : Linking Custom Node failed for ", err);
+            }
         });
         resolve(details);
     })
 }
-let removeCustomNodes = (details) => {
-    console.log("removeCustomNodes");
+let unlinkCustomNodes = (details) => {
+    console.log("unlinkCustomNodes");
     return new Promise((resolve, reject) => {
         details.nodeNames.forEach((node) => {
-            fs.removeSync(path.join(details.userDir, "node_modules", node));
+            try {
+                fs.unlinkSync(path.join(details.userDir, "node_modules", node));
+            } catch (err) {
+                console.log(err);
+                reject("Error : Unlinking Custom Node failed.", err);
+            }
         });
         resolve(details);
     });

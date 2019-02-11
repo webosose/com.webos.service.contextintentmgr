@@ -25,7 +25,7 @@ var subscribeCall = (server, callback) => {
         let params = {
             "subscribe": true
         },
-            subscriptionAIx = server.service.subscribe('luna://com.webos.service.ai.' + server.engine + '/getResponse', params);
+            subscriptionAIx = process.service.subscribe('luna://com.webos.service.ai.' + server.engine + '/getResponse', params);
         subscriptionAIx.on("response", (res) => {
             if (res.payload && res.payload.response && !res.payload.response.hasOwnProperty('partial')) {
                 callback(res);
@@ -51,7 +51,7 @@ module.exports = class engineLogic {
     }
     startAIEngine() {
         return new Promise(function (resolve, reject) {
-            this.service.call("luna://com.webos.service.ai." + this.engine + "/start",
+            process.service.call("luna://com.webos.service.ai." + this.engine + "/start",
                 _engineMap[this.engine], (response) => {
                     if (response) {
                         resolve("success");

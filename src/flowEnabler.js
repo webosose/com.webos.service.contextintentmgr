@@ -33,17 +33,17 @@ let subscribe = (RED) => {
     userDir = RED.settings.userDir;
     flowFile = RED.settings.flowFile;
     Red = RED;
-    let subscribeAppManager = RED.settings.webosService.subscribe('luna://com.webos.applicationManager/running', params);
+    let subscribeAppManager = process.service.subscribe('luna://com.webos.applicationManager/running', params);
     subscribeAppManager.on("response", function (response) {
         if (response.payload.running) {
             manifest = [];
-            if (response.payload.running.length == 1) {//this check added since running event triggers multiple times
+            if (response.payload.running.length == 1) { //this check added since running event triggers multiple times
                 if (previousAppId != response.payload.running[0].id) {
                     enableFlows({
                         "appId": response.payload.running[0].id
                     });
                 }
-                if (previousPublishedAppId != "" && previousPublishedAppId != response.payload.running[0].id) {// used to unsubcribe pub on app closed by other app
+                if (previousPublishedAppId != "" && previousPublishedAppId != response.payload.running[0].id) { // used to unsubcribe pub on app closed by other app
                     disablePublisher({
                         "appId": previousPublishedAppId
                     })
@@ -54,7 +54,7 @@ let subscribe = (RED) => {
                         "appId": previousAppId
                     })
                 }
-                if (previousPublishedAppId != "") {// used to unsubcribe pub on app close
+                if (previousPublishedAppId != "") { // used to unsubcribe pub on app close
                     disablePublisher({
                         "appId": previousPublishedAppId
                     })
