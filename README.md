@@ -4,7 +4,14 @@ Node-red based context intent manager (CIM) service to handle rules and correspo
 
 Description
 -----------
-Node-red based context intent manager (CIM) service to handle rules and corresponding actions
+The Context Intent Manager (CIM) component interacts with the AI service that is invoked in workflows that are deployed in web apps. The workflows
+are created using a GUI utility called the workflow Designer.
+
+This eco-system (CIM and Workflow Designer) allows you to add AI logic to your web app, without actually modifying its source code.
+
+API Summary
+-----------
+Please refer [API details](http://webosose.org/develop/ls2-api/ls2-api-reference/com-webos-service-contextintentmgr/)
 
 Copyright and License Information
 =================================
