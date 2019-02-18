@@ -19,7 +19,8 @@ const Logger = require('./util/logger').Logger,
     _package = require('./package.json'),
     RED = require("node-red"),
     flowInstaller = require("./src/flowInstaller.js"),
-    cimApi = require("./src/cimApi.js");
+    cimApi = require("./src/cimApi.js"),
+    restrictMode = require("./src/restrictMode");
 
 process.title = "contextintentmgr";
 let logger = new Logger(process.title);
@@ -47,6 +48,7 @@ RED.start().then(() => {
     process.service = new WebosService(_package.name);
     cimApi.initApi(RED); // All routs are required here
     flowInstaller.subscribe(RED); // Subscribe for appInstallService for merging flows of all apps.
+    restrictMode.init();// Added to block child process
 });
 
 let stopAi = () => {

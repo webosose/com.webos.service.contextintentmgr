@@ -23,6 +23,7 @@ const fs = require("fs-extra"),
         logToPath
     } = require("./logger"),
     APP_DEFAULT_PATH = "/media/developer/apps/usr/palm/applications/",
+    FLOW_ID_LIST_FILE = "flowIdList.json",
     MANIFEST_FILE = "manifest.json",
     CIM_FLOW_FILE = "cimFlowFile",
     CIM_CUSTOM_NODES_DIR = "cimCustomNodesDir";
@@ -167,6 +168,7 @@ let removeFlow = (packageId) => {
         let file = fs.readJsonSync(manifestPath);
         if (file[packageId]) { //This check added to avoid trigger of our code for app which not part of CIM
             removeJSON(flowDetails)
+                .then(removeFromflowIdList)
                 .then(removeFromManifest)
                 .then(customNodeInstaller.removeFromPackage)
                 .then(createNewCombinedFlow)
@@ -185,7 +187,6 @@ let removeFlow = (packageId) => {
 }
 //Since same steps are used in addFlow and flowInstaller, made a common class
 let doInstallation = (flowDetails, cb) => {
-
     checkValidJson(flowDetails)
         .then((flowDetails) => {
             if (flowDetails.customNodeDir) {
@@ -224,10 +225,14 @@ let checkValidJson = (flowDetails) => {
                 flowDetails["data-injector-map"] = [];
                 flowDetails["data-publisher-keys"] = [];
                 flowDetails["data-publisher-map"] = [];
+                flowDetails["flowIdList"] = {};
+                flowDetails["flowIdList"][flowDetails.packageId] = {};
                 // add the key here
                 flowDetails.flowData.forEach((node, index, array) => {
-                    flowDetails.flowData[index].id = flowDetails.packageId + "_" + node.id;
+                    let newId = flowDetails.packageId + "_" + node.id;
+                    flowDetails.flowData[index].id = newId;
                     if (node.type == "tab") {
+                        flowDetails["flowIdList"][flowDetails.packageId][newId] = node;
                         if (node.disabled) {
                             flowDetails.disabled.push(node.id);
                         }
@@ -270,6 +275,7 @@ let checkValidJson = (flowDetails) => {
 let commonPromises = (flowDetails) => {
     return new Promise((resolve, reject) => {
         createJSON(flowDetails)
+            .then(addToflowIdList)
             .then(addToManifest)
             .then(createNewCombinedFlow)
             .then((flowDetails) => {
@@ -308,6 +314,44 @@ let removeJSON = (flowDetails) => {
                 reject("Error : App not exists in allFlows folder :" + flowDetails.packageId);
             }
         });
+    });
+}
+//reads existing MANIFEST_FILE in .nodered dir, add new entry of installed app and saves
+let addToflowIdList = (flowDetails) => {
+    return new Promise((resolve, reject) => {
+        let fileName = userDir + "/" + FLOW_ID_LIST_FILE;
+        let file = {};
+        let appName = flowDetails.packageId; //"appId" is used as manifest property
+        try {
+            file = fs.readJsonSync(fileName);
+        } catch (e) {
+            file = {};
+        }
+        file[appName] = flowDetails["flowIdList"][appName];
+        if (writeJSONToDiskSync(fileName, file)) {
+            resolve(flowDetails);
+        } else {
+            reject("Error : Failed to create a json : " + allPath);
+        }
+    });
+}
+
+//reads manifest file in .nodered dir removes uninstalled app entry and saves
+let removeFromflowIdList = (flowDetails) => {
+    return new Promise((resolve, reject) => {
+        let fileName = userDir + "/" + FLOW_ID_LIST_FILE;
+        let file = fs.readJsonSync(fileName);
+        let appName = flowDetails.packageId;
+        if (file[appName]) {
+            delete file[appName];
+            if (writeJSONToDiskSync(fileName, file)) {
+                resolve(flowDetails);
+            } else {
+                reject("Error : Failed to create a json : " + allPath);
+            }
+        } else {
+            reject("Error : No entry in flowIdList file found...");
+        }
     });
 }
 //reads existing MANIFEST_FILE in .nodered dir, add new entry of installed app and saves
@@ -399,28 +443,40 @@ let concatFlows = (flowDetails) => {
                 } catch (e) {
                     manifestObj = {};
                 }
+                let flowIdListPath = userDir + "/" + FLOW_ID_LIST_FILE,
+                    flowIdListObj = {};
+                try {
+                    flowIdListObj = fs.readJsonSync(flowIdListPath);
+                } catch (e) {
+                    flowIdListObj = {};
+                }
                 flows.forEach((flow, index, array) => {
                     appid = flow.replace(".json", "");
                     let obj = fs.readJsonSync(allPath + flow)
                     if (obj != null) {
                         let disabledArr, alwaysDisabledArr;
-                        if (manifestObj[appid]) {
+                        if (flowIdListObj[appid] && manifestObj[appid]) {
                             disabledArr = manifestObj[appid].disabled;
                             alwaysDisabledArr = manifestObj[appid].alwaysDisabled;
                             for (let f = 0, fMax = obj.length; f < fMax; f++) {
                                 if (obj[f].type === "tab") {
                                     let alwaysDisabledIndex = alwaysDisabledArr.indexOf(obj[f].id),
                                         disabledIndex = disabledArr.indexOf(obj[f].id);
-                                    if (obj[f].disabled === null) { // always disabled
-                                        obj[f].disabled = true;
-                                        if (disabledIndex > -1) disabledArr.splice(disabledIndex, 1);
-                                        if (alwaysDisabledIndex < 0) alwaysDisabledArr.push(obj[f].id);
-                                    } else if (obj[f].disabled === true) { // on app launch
-                                        if (alwaysDisabledIndex > -1) alwaysDisabledArr.splice(alwaysDisabledIndex, 1);
-                                        if (disabledIndex < 0) disabledArr.push(obj[f].id);
-                                    } else {
-                                        if (disabledIndex > -1) disabledArr.splice(disabledIndex, 1);
-                                        if (alwaysDisabledIndex > -1) alwaysDisabledArr.splice(alwaysDisabledIndex, 1);
+                                    if (flowIdListObj[appid][obj[f].id] && flowIdListObj[appid][obj[f].id]) {
+                                        let tabData = flowIdListObj[appid][obj[f].id];
+                                        if (tabData.disabled === null) { // always disabled
+                                            obj[f].disabled = true;
+                                            if (disabledIndex > -1) disabledArr.splice(disabledIndex, 1);
+                                            if (alwaysDisabledIndex < 0) alwaysDisabledArr.push(obj[f].id);
+                                        } else if (tabData.disabled === true) { // on app launch
+                                            obj[f].disabled = true;
+                                            if (alwaysDisabledIndex > -1) alwaysDisabledArr.splice(alwaysDisabledIndex, 1);
+                                            if (disabledIndex < 0) disabledArr.push(obj[f].id);
+                                        } else {
+                                            obj[f].disabled = tabData.disabled;
+                                            if (disabledIndex > -1) disabledArr.splice(disabledIndex, 1);
+                                            if (alwaysDisabledIndex > -1) alwaysDisabledArr.splice(alwaysDisabledIndex, 1);
+                                        }
                                     }
                                 }
                             }
