@@ -37,13 +37,15 @@ let subscribe = (RED) => {
     subscribeAppManager.on("response", function (response) {
         if (response.payload.running) {
             manifest = [];
-            if (response.payload.running.length == 1) { //this check added since running event triggers multiple times
+            //this check added since running event triggers multiple times
+            if (response.payload.running.length == 1) {
                 if (previousAppId != response.payload.running[0].id) {
                     enableFlows({
                         "appId": response.payload.running[0].id
                     });
                 }
-                if (previousPublishedAppId != "" && previousPublishedAppId != response.payload.running[0].id) { // used to unsubcribe pub on app closed by other app
+                // used to unsubcribe pub on app closed by other app
+                if (previousPublishedAppId != "" && previousPublishedAppId != response.payload.running[0].id) {
                     disablePublisher({
                         "appId": previousPublishedAppId
                     })
@@ -54,7 +56,8 @@ let subscribe = (RED) => {
                         "appId": previousAppId
                     })
                 }
-                if (previousPublishedAppId != "") { // used to unsubcribe pub on app close
+                // used to unsubcribe pub on app close
+                if (previousPublishedAppId != "") {
                     disablePublisher({
                         "appId": previousPublishedAppId
                     })
@@ -75,7 +78,8 @@ let enableFlows = (data) => {
         .then(getDisabledFlows)
         .then(commonSteps)
         .then((data) => {
-            previousAppId = data.appId; //store app id for disabling purpose on next call
+            //store app id for disabling purpose on next call
+            previousAppId = data.appId;
             console.log("END: " + previousAppId);
         })
         .catch((e) => {
@@ -89,7 +93,8 @@ let disableFlows = (data) => {
     getManifestValues(data)
         .then(commonSteps)
         .then((data) => {
-            previousAppId = ""; //clear it
+            //clear it
+            previousAppId = "";
             console.log("END: " + previousAppId);
         })
         .catch((e) => {
@@ -153,9 +158,11 @@ let commonSteps = (data) => {
         getPreviousEnabled(data)
             .then(getAllFlows)
             .then(enableDisableTabs)
-            .then(allFlowsFileAction.createAllFlowFile) //called from allFlowFileCreator.js
+            //called from allFlowFileCreator.js
+            .then(allFlowsFileAction.createAllFlowFile)
             .then((data) => {
-                allFlowsFileAction.restartNodes(Red, data) //called from allFlowFileCreator.js
+                //called from allFlowFileCreator.js
+                allFlowsFileAction.restartNodes(Red, data)
                     .then((data) => {
                         resolve(data);
                     })

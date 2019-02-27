@@ -110,7 +110,8 @@ var dataPublisher = (input, appId, callback) => {
     validateInput(input, appId, "publisher")
         //.then(subscribeForPublishData)
         .then((result) => {
-            flowEnabler.setPublisherAppId(appId); //This is added, to disable pubsub on app close
+            //This is added, to disable pubsub on app close
+            flowEnabler.setPublisherAppId(appId);
             _pubsub.subscribe(input.subscriptionKey, (key, data) => {
                 let result = {
                     "data": data

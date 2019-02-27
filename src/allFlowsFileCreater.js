@@ -14,7 +14,8 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-const fs = require("fs-extra");
+const fs = require("fs-extra"),
+    DONE_FILE = "DONE.txt";
 
 let writeJSONToDiskSync = (path, JSONData) => {
     let fd;
@@ -24,7 +25,7 @@ let writeJSONToDiskSync = (path, JSONData) => {
         fs.fdatasyncSync(fd);
         return true;
     } catch (e) {
-        console.log("Exception in writing file",e);
+        console.log("Exception in writing file", e);
         return false;
     }
 };
@@ -42,6 +43,8 @@ let createAllFlowFile = (details) => {
 //restarts flows by setFlow method
 let restartFlows = (Red, details) => {
     console.log('restartFlows');
+    //Ensure that process is completed
+    fs.ensureFile(Red.settings.userDir + "/" + DONE_FILE);
     return new Promise((resolve, reject) => {
         if (details.nodeNames && details.installer) {
             reject("Device needs to restart after customnodes installed");
@@ -54,6 +57,8 @@ let restartFlows = (Red, details) => {
 //restarts nodes by setFlow method
 let restartNodes = (Red, details) => {
     console.log('restartNodes');
+    //Ensure that process is completed
+    fs.ensureFile(Red.settings.userDir + "/" + DONE_FILE);
     return new Promise((resolve, reject) => {
         Red.nodes.setFlows(details.allFlows, "node");
         resolve(details);

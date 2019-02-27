@@ -26,7 +26,8 @@ const fs = require("fs-extra"),
     FLOW_ID_LIST_FILE = "flowIdList.json",
     MANIFEST_FILE = "manifest.json",
     CIM_FLOW_FILE = "cimFlowFile",
-    CIM_CUSTOM_NODES_DIR = "cimCustomNodesDir";
+    CIM_CUSTOM_NODES_DIR = "cimCustomNodesDir",
+    DONE_FILE = "DONE.txt";
 let userDir = '',
     flowFile = '',
     Red = [],
@@ -42,11 +43,15 @@ let subscribe = (RED) => {
     flowFile = RED.settings.flowFile;
     Red = RED;
     let subscribeAppInstall = process.service.subscribe('luna://com.webos.appInstallService/status', params);
-    flowEnabler.subscribe(RED); //will subscribe for applicationManager to get running app info
-    createNewCombinedFlow({}); // one time step to re create flow file on start of the service
+    //will subscribe for applicationManager to get running app info
+    flowEnabler.subscribe(RED);
+    // one time step to re create flow file on start of the service
+    createNewCombinedFlow({});
     logFolder = path.join(userDir, "logs");
-    fs.emptyDir(logFolder); //Clears all old logs in directory
-    let appClosing = false; //app clossing event trigger multiple times this is used to trigger remove flow only once.
+    //Clears all old logs in directory
+    fs.emptyDir(logFolder);
+    //app clossing event trigger multiple times this is used to trigger remove flow only once.
+    let appClosing = false;
     subscribeAppInstall.on("response", (response) => {
         if (response.payload.details) {
             let details = response.payload.details;
@@ -100,7 +105,10 @@ let writeJSONToDiskSync = (path, JSONData) => {
         return false;
     }
 };
-
+// Creates Done file on Error, Ensure that process is completed
+let addDoneFile = () => {
+    fs.ensureFile(userDir + "/" + DONE_FILE);
+}
 //get called when state is installed, gets appinfo file from app installed path & trigger promise
 let flowInstaller = (input, callback) => {
     console.log("flowInstaller :");
@@ -118,19 +126,24 @@ let flowInstaller = (input, callback) => {
         if (input[CIM_CUSTOM_NODES_DIR]) {
             flowDetails.customNodeDir = input[CIM_CUSTOM_NODES_DIR];
         }
+        // Deletes the DONE.txt indicating that installation is in progress
+        fs.removeSync(userDir + "/" + DONE_FILE);
         doInstallation(flowDetails, (err) => {
             if (callback) {
                 let result = {
                     "flowFileId": input.packageId,
                     "message": successMsg
                 };
-                if (err)
+                if (err) {
                     result.message = err;
+                    addDoneFile();
+                }
                 callback(result);
             } else {
                 if (err) {
                     console.log("ERROR LOG ..............", err)
                     logToPath(logPath, true, err);
+                    addDoneFile();
                 } else {
                     successMsg = input.packageId + " : " + successMsg;
                     logToPath(logPath, false, successMsg);
@@ -164,9 +177,12 @@ let removeFlow = (packageId) => {
             "packageId": packageId,
             "userDir": userDir
         };
+        // Deletes the DONE.txt indicating that installation is in progress
+        fs.removeSync(userDir + "/" + DONE_FILE);
         let manifestPath = userDir + "/" + MANIFEST_FILE;
         let file = fs.readJsonSync(manifestPath);
-        if (file[packageId]) { //This check added to avoid trigger of our code for app which not part of CIM
+        //This check added to avoid trigger of our code for app which not part of CIM
+        if (file[packageId]) {
             removeJSON(flowDetails)
                 .then(removeFromflowIdList)
                 .then(removeFromManifest)
@@ -181,6 +197,7 @@ let removeFlow = (packageId) => {
                 });
         } else {
             console.log("Warning: App not having entry in manifest..");
+            addDoneFile();
             reject("Warning: App not having entry in manifest..")
         }
     });
@@ -321,7 +338,8 @@ let addToflowIdList = (flowDetails) => {
     return new Promise((resolve, reject) => {
         let fileName = userDir + "/" + FLOW_ID_LIST_FILE;
         let file = {};
-        let appName = flowDetails.packageId; //"appId" is used as manifest property
+        //"appId" is used as manifest property
+        let appName = flowDetails.packageId;
         try {
             file = fs.readJsonSync(fileName);
         } catch (e) {
@@ -335,7 +353,6 @@ let addToflowIdList = (flowDetails) => {
         }
     });
 }
-
 //reads manifest file in .nodered dir removes uninstalled app entry and saves
 let removeFromflowIdList = (flowDetails) => {
     return new Promise((resolve, reject) => {
@@ -359,7 +376,8 @@ let addToManifest = (flowDetails) => {
     return new Promise((resolve, reject) => {
         let fileName = userDir + "/" + MANIFEST_FILE;
         let file = {};
-        let appName = flowDetails.packageId; //"appId" is used as manifest property
+        //"appId" is used as manifest property
+        let appName = flowDetails.packageId;
         try {
             file = fs.readJsonSync(fileName);
         } catch (e) {
@@ -367,7 +385,8 @@ let addToManifest = (flowDetails) => {
         }
         file[appName] = {
             "appId": flowDetails.packageId,
-            "disabled": flowDetails.disabled, // used for enabling and disabling flow
+            // used for enabling and disabling flow
+            "disabled": flowDetails.disabled,
             "alwaysDisabled": flowDetails.alwaysDisabled,
             "data-injector-keys": flowDetails["data-injector-keys"],
             "data-injector-map": flowDetails["data-injector-map"],
@@ -411,9 +430,11 @@ let createNewCombinedFlow = (flowDetails) => {
     return new Promise((resolve, reject) => {
         concatFlows(flowDetails)
             .then(backupAllFlowFile)
-            .then(allFlowsFileAction.createAllFlowFile) //called from allFlowFileCreator.js
+            //called from allFlowFileCreator.js
+            .then(allFlowsFileAction.createAllFlowFile)
             .then((flowDetails) => {
-                allFlowsFileAction.restartFlows(Red, flowDetails) //called from allFlowFileCreator.js
+                //called from allFlowFileCreator.js
+                allFlowsFileAction.restartFlows(Red, flowDetails)
                     .then((flowDetails) => {
                         resolve(flowDetails);
                     })
@@ -464,11 +485,13 @@ let concatFlows = (flowDetails) => {
                                         disabledIndex = disabledArr.indexOf(obj[f].id);
                                     if (flowIdListObj[appid][obj[f].id] && flowIdListObj[appid][obj[f].id]) {
                                         let tabData = flowIdListObj[appid][obj[f].id];
-                                        if (tabData.disabled === null) { // always disabled
+                                        // always disabled
+                                        if (tabData.disabled === null) {
                                             obj[f].disabled = true;
                                             if (disabledIndex > -1) disabledArr.splice(disabledIndex, 1);
                                             if (alwaysDisabledIndex < 0) alwaysDisabledArr.push(obj[f].id);
-                                        } else if (tabData.disabled === true) { // on app launch
+                                            // on app launch
+                                        } else if (tabData.disabled === true) {
                                             obj[f].disabled = true;
                                             if (alwaysDisabledIndex > -1) alwaysDisabledArr.splice(alwaysDisabledIndex, 1);
                                             if (disabledIndex < 0) disabledArr.push(obj[f].id);
@@ -495,7 +518,8 @@ let concatFlows = (flowDetails) => {
                     reject("Error : create concatFlows");
                 }
             } else {
-                flowDetails.allFlows = []; //if no flows exists then pass empty array
+                // if no flows exists then pass empty array
+                flowDetails.allFlows = [];
                 resolve(flowDetails);
             }
         } catch (e) {
