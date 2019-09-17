@@ -23,45 +23,32 @@ let flowFile = '';
 let Red = [];
 let previousAppId = ""; //stores enabled flow appId as in manifest
 let previousPublishedAppId = ""; //stores Published flow appId as in manifest \\used in dataHandler
-let manifest = [];
+
 //subscribe to applicationManager for running state, if running app count is 1 and its not equal to
 //previous appId then enable flows, else if previous appId exists disable flows of that app Id
 let subscribe = (RED) => {
-    let params = {
-        "subscribe": true
-    };
     userDir = RED.settings.userDir;
     flowFile = RED.settings.flowFile;
     Red = RED;
-    let subscribeAppManager = process.service.subscribe('luna://com.webos.applicationManager/running', params);
+    let subscribeAppManager = process.service.subscribe('luna://com.webos.applicationManager/getForegroundAppInfo', { "subscribe": true });
     subscribeAppManager.on("response", function (response) {
-        if (response.payload.running) {
-            manifest = [];
-            //this check added since running event triggers multiple times
-            if (response.payload.running.length == 1) {
-                if (previousAppId != response.payload.running[0].id) {
-                    enableFlows({
-                        "appId": response.payload.running[0].id
-                    });
-                }
-                // used to unsubcribe pub on app closed by other app
-                if (previousPublishedAppId != "" && previousPublishedAppId != response.payload.running[0].id) {
-                    disablePublisher({
-                        "appId": previousPublishedAppId
-                    })
-                }
-            } else if (response.payload.running.length == 0) {
-                if (previousAppId != "") {
-                    disableFlows({
-                        "appId": previousAppId
-                    })
-                }
-                // used to unsubcribe pub on app close
-                if (previousPublishedAppId != "") {
-                    disablePublisher({
-                        "appId": previousPublishedAppId
-                    })
-                }
+        if (response.payload.appId != '') {
+            if (previousAppId != response.payload.appId) {
+                enableFlows({ "appId": response.payload.appId });
+            }
+            if (previousPublishedAppId != "" && previousPublishedAppId != response.payload.appId) {
+                disablePublisher({ "appId": previousPublishedAppId });
+            }
+        } else {
+            if (previousAppId != "") {
+                disableFlows({
+                    "appId": previousAppId
+                })
+            }
+            if (previousPublishedAppId != "") {
+                disablePublisher({
+                    "appId": previousPublishedAppId
+                })
             }
         }
     });
@@ -108,7 +95,7 @@ let getManifestValues = (data) => {
     return new Promise((resolve, reject) => {
         let path = userDir + "/" + MANIFEST_FILE;
         try {
-            manifest = fs.readJsonSync(path);
+            data.manifest = fs.readJsonSync(path);
             resolve(data);
         } catch (e) {
             reject("Error : manifest file require failed " + path);
@@ -120,8 +107,8 @@ let disablePublisher = (data) => {
     console.log("disablePublisher");
     getManifestValues(data)
         .then((data) => {
-            if (manifest[data.appId] && manifest[data.appId]["data-publisher-keys"]) {
-                manifest[data.appId]["data-publisher-keys"].forEach((key, index, array) => {
+            if (data.manifest[data.appId] && data.manifest[data.appId]["data-publisher-keys"]) {
+                data.manifest[data.appId]["data-publisher-keys"].forEach((key, index, array) => {
                     _pubsub.unsubscribe(key);
                     if (index == array.length - 1) {
                         previousPublishedAppId = "";
@@ -138,8 +125,8 @@ let disablePublisher = (data) => {
 let getDisabledFlows = (data) => {
     console.log("getDisabledFlows");
     return new Promise((resolve, reject) => {
-        if (manifest[data.appId] && manifest[data.appId].disabled.length > 0) {
-            data.disabled = manifest[data.appId].disabled;
+        if (data.manifest[data.appId] && data.manifest[data.appId].disabled.length > 0) {
+            data.disabled = data.manifest[data.appId].disabled;
             resolve(data);
         } else {
             //else triggers when u try to launch builtin app / app which not have entry in manifest
@@ -180,8 +167,8 @@ let getPreviousEnabled = (data) => {
             data.enabled = [];
             resolve(data);
         } else {
-            if (manifest[previousAppId] && manifest[previousAppId].disabled.length > 0) {
-                data.enabled = manifest[previousAppId].disabled;
+            if (data.manifest[previousAppId] && data.manifest[previousAppId].disabled.length > 0) {
+                data.enabled = data.manifest[previousAppId].disabled;
                 resolve(data);
             } else {
                 data.enabled = [];

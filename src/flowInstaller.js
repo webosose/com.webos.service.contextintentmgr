@@ -179,10 +179,13 @@ let removeFlow = (packageId) => {
         };
         // Deletes the DONE.txt indicating that installation is in progress
         fs.removeSync(userDir + "/" + DONE_FILE);
-        let manifestPath = userDir + "/" + MANIFEST_FILE;
-        let file = fs.readJsonSync(manifestPath);
+        let manifestPath = userDir + "/" + MANIFEST_FILE,
+            file;
+        if (fs.existsSync(manifestPath)) {
+            file = fs.readJsonSync(manifestPath);
+        }
         //This check added to avoid trigger of our code for app which not part of CIM
-        if (file[packageId]) {
+        if (file && file[packageId]) {
             removeJSON(flowDetails)
                 .then(removeFromflowIdList)
                 .then(removeFromManifest)
@@ -427,20 +430,23 @@ let removeFromManifest = (flowDetails) => {
 //its common flow for both installed and removed flow, also called whenever service starts,
 // to create new flows.json from app flows present in .nodered/allFlows directory
 let createNewCombinedFlow = (flowDetails) => {
+    let isServiceInit = (Object.keys(flowDetails).length === 0 ? true : false);
     return new Promise((resolve, reject) => {
         concatFlows(flowDetails)
             .then(backupAllFlowFile)
             //called from allFlowFileCreator.js
             .then(allFlowsFileAction.createAllFlowFile)
             .then((flowDetails) => {
-                //called from allFlowFileCreator.js
-                allFlowsFileAction.restartFlows(Red, flowDetails)
-                    .then((flowDetails) => {
-                        resolve(flowDetails);
-                    })
-                    .catch((error) => {
-                        reject(error);
-                    });
+                if (!isServiceInit) {
+                    //called from allFlowFileCreator.js
+                    allFlowsFileAction.restartFlows(Red, flowDetails)
+                        .then((flowDetails) => {
+                            resolve(flowDetails);
+                        })
+                        .catch((error) => {
+                            reject(error);
+                        });
+                }
             })
             .catch((error) => {
                 reject(error);
@@ -450,10 +456,13 @@ let createNewCombinedFlow = (flowDetails) => {
 //reads .nodered/allFlows directory concat all flows into single json.
 let concatFlows = (flowDetails) => {
     return new Promise((resolve, reject) => {
-        let allPath = userDir + '/allFlows/';
-        let allFlows = [];
+        let allPath = userDir + '/allFlows/',
+            allFlows = [],
+            flows;
         try {
-            let flows = fs.readdirSync(allPath);
+            if (fs.existsSync(allPath)) {
+                flows = fs.readdirSync(allPath);
+            }
             if (flows && flows.length > 0) {
                 let itemsProcessed = 0;
                 let appid,

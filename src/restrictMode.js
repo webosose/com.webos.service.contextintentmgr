@@ -13,7 +13,7 @@
 // limitations under the License.
 //
 // SPDX-License-Identifier: Apache-2.0
-
+Object.defineProperty(process, "userDir", { value: "/var/cim/.nodered", enumerable: false, configurable: false, writable: false });
 var child_process = require('child_process');
 
 module.exports = {

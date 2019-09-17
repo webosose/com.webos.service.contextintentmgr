@@ -15,13 +15,26 @@
 
 # SPDX-License-Identifier: Apache-2.0
 
-# Set contextintentmgr flow path
-export CIM_FLOW_PATH="/usr/palm/services/com.webos.service.contextintentmgr/.nodered"
+# set the directory path for CIM nodes
+export CIM_NODES_DIR="/usr/palm/services/com.webos.service.contextintentmgr/.nodered"
 
-if [ "$(stat -c "%U %G" ${CIM_FLOW_PATH})" != "nobody nogroup" ]
-then
-    # ensure that cim flow directories exist
-    mkdir -p ${CIM_FLOW_PATH}
-    # set directories permission
-    chown -R nobody:nogroup ${CIM_FLOW_PATH}
-fi
+# set the user directory path for CIM
+export CIM_USER_DIR="/var/cim/.nodered"
+
+# ensure that CIM user directories exist
+mkdir -p ${CIM_USER_DIR}
+mkdir -p ${CIM_USER_DIR}/node_modules
+
+# set user directories permission level to nobody
+chown -R nobody:nogroup ${CIM_USER_DIR}
+
+# # create symlink for default CIM nodes, needed for CIM runtime
+for NODE_PATH in ${CIM_NODES_DIR}/node_modules/*; do
+    destlink=${CIM_USER_DIR}/node_modules/$(basename "$NODE_PATH")
+    [ ! -e $destlink ] && ln -s ${NODE_PATH} $destlink
+done
+
+# make a copy of package.json
+package=${CIM_USER_DIR}/package.json
+[ ! -f $package ] && cp ${CIM_NODES_DIR}/package.json ${CIM_USER_DIR}
+exec /usr/bin/run-js-service -k -g -l nobody -n /usr/palm/services/com.webos.service.contextintentmgr

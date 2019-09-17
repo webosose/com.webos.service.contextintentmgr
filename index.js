@@ -33,7 +33,7 @@ let settings = {
             audit: false
         }
     },
-    userDir: process.cwd() + "/.nodered", // should be changed to may be /media/cryptops/.nodered
+    userDir: process.userDir, // userDir is set to /var/cim/.nodered
     functionGlobalContext: {},
     httpAdminRoot: false,
     httpNodeRoot: false,
@@ -46,9 +46,9 @@ RED.init(undefined, settings);
 RED.start().then(() => {
     console.log("<<<<<<<<<<<<<<<<<<<<< REGISTER SERVICE >>>>>>>>>>>>>>>>>>>>");
     process.service = new WebosService(_package.name);
+    restrictMode.init();// Added to block child process
     cimApi.initApi(RED); // All routs are required here
     flowInstaller.subscribe(RED); // Subscribe for appInstallService for merging flows of all apps.
-    restrictMode.init();// Added to block child process
 });
 
 let stopAi = () => {
