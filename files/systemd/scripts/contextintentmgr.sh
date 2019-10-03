@@ -37,4 +37,3 @@ done
 # make a copy of package.json
 package=${CIM_USER_DIR}/package.json
 [ ! -f $package ] && cp ${CIM_NODES_DIR}/package.json ${CIM_USER_DIR}
-exec /usr/bin/run-js-service -k -g -l nobody -n /usr/palm/services/com.webos.service.contextintentmgr
