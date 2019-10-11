@@ -31,9 +31,13 @@ chown -R nobody:nogroup ${CIM_USER_DIR}
 # # create symlink for default CIM nodes, needed for CIM runtime
 for NODE_PATH in ${CIM_NODES_DIR}/node_modules/*; do
     destlink=${CIM_USER_DIR}/node_modules/$(basename "$NODE_PATH")
-    [ ! -e $destlink ] && ln -s ${NODE_PATH} $destlink
+    if [ ! \( -e "${destlink}" \) ]; then
+        ln -s ${NODE_PATH} $destlink
+    fi
 done
 
 # make a copy of package.json
 package=${CIM_USER_DIR}/package.json
-[ ! -f $package ] && cp ${CIM_NODES_DIR}/package.json ${CIM_USER_DIR}
+if [ ! \( -e "${package}" \) ]; then
+    cp ${CIM_NODES_DIR}/package.json ${CIM_USER_DIR}
+fi
