@@ -1,0 +1,4 @@
+Open Source Software Package:
+- name: webOSOSE-com.webos.service.contextintentmgr
+  source: https://github.com/webosose/com.webos.service.contextintentmgr
+  license: Apache-2.0
