@@ -43,4 +43,4 @@ let logToPath = (logPath, isError, msg, isFinal) => {
 module.exports = {
     logToPath: logToPath,
     getFormattedLog: getFormattedLog
-}
+};

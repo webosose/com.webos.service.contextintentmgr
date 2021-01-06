@@ -18,8 +18,8 @@ const pubsub_subscriber = require("../../pubsub");
 
 module.exports = class DataInjector {
     constructor(service, config) {
-        this.service = service,
-            this.config = config,
+        this.service = service;
+            this.config = config;
             this.subscriptionKey = config.appid + "_" + config.key;
     }
     subscribe(subscriber) {
@@ -29,4 +29,4 @@ module.exports = class DataInjector {
             delete pubsub_subscriber.localStorage[key];
         }
     }
-}
+};

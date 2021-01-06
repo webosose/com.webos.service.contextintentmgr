@@ -18,11 +18,11 @@ const pubsub_publisher = require("../../pubsub");
 
 module.exports = class DataPublisher {
     constructor(service, config) {
-        this.service = service,
-            this.config = config,
+        this.service = service;
+            this.config = config;
             this.subscriptionKey = config.appid + "_" + config.key;
     }
     publish(msg) {
         pubsub_publisher.publish(this.subscriptionKey, msg);
     }
-}
+};

@@ -25,7 +25,7 @@ module.exports = function (RED, msg, node) {
             try {
                 params = JSON.parse(node.params);
             } catch (e) {
-                params = {}
+                params = {};
             }
         }
         if (msg.payload && typeof msg.payload == "object" && Array.isArray(msg.payload) == false) {
@@ -42,4 +42,4 @@ module.exports = function (RED, msg, node) {
         "id": node.appId,
         "params": message
     }, (response) => {});
-}
+};

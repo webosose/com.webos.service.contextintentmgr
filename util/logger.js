@@ -28,7 +28,7 @@ function Logger(context) {
         console.log("pmloglib not available; using console");
     }
     return;
-};
+}
 
 function buildLogMessage(id, message, props) {
     return id + ": " + message + (props ? (" " + util.inspect(props)) : "");
@@ -65,11 +65,11 @@ function adaptProps(props) {
     }
 
     return props;
-};
+}
 
 function makeLogFunc(contextLevelName, consoleFuncName) {
     var logToConsole = function (id, message, props) {
-        var props = adaptProps(props);
+        props = adaptProps(props);
         var text = (id ? (id + ": ") : "") + message + (props ? (" " + util.inspect(props)) : "");
         console[consoleFuncName](text);
     };
@@ -77,7 +77,7 @@ function makeLogFunc(contextLevelName, consoleFuncName) {
     var f = function (id, message, props) {
         if (logContext) {
             var level = pmloglib[contextLevelName];
-            var props = adaptProps(props);
+            props = adaptProps(props);
             logContext.log(level, id, props, message);
         }
         // Also log to console since pmlog usually won't
@@ -85,7 +85,7 @@ function makeLogFunc(contextLevelName, consoleFuncName) {
     };
 
     return f;
-};
+}
 
 Logger.prototype.critical = makeLogFunc("LOG_CRITICAL", "error");
 Logger.prototype.error = makeLogFunc("LOG_ERR", "error");

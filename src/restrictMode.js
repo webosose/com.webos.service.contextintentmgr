@@ -24,11 +24,8 @@ module.exports = {
             throw new Error("Function call process.kill(), process._kill(), process.abort() is prohibited in this environment.");
         };
         // Blocking restrictedCommands from child_processes in node-red flows
-        child_process.fork = child_process._forkChild
-            = child_process.execFile = child_process.spawn
-            = child_process.spawnSync = child_process.execFileSync
-            = child_process.execSync = child_process.exec = function () {
+        child_process.fork = child_process._forkChild = child_process.execFile = child_process.spawn = child_process.spawnSync = child_process.execFileSync = child_process.execSync = child_process.exec = function () {
                 throw new Error("Function call to child_process is prohibited in this environment.");
             };
     }
-}
+};

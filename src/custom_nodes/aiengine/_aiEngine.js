@@ -19,7 +19,7 @@ var _engineMap = {
         "mode": "continuous",
         "keywordDetect": true
     }
-}
+};
 var subscribeCall = (server, callback) => {
     try {
         let params = {
@@ -42,12 +42,12 @@ var subscribeCall = (server, callback) => {
     } catch (e) {
         console.log("Subscribing to service failed [raw Data]", e);
     }
-}
+};
 module.exports = class engineLogic {
     constructor(service, config, engine) {
-        this.service = service,
-            this.engine = engine,
-            this.config = config
+        this.service = service;
+            this.engine = engine;
+            this.config = config;
     }
     startAIEngine() {
         return new Promise(function (resolve, reject) {
@@ -64,4 +64,4 @@ module.exports = class engineLogic {
     subscribeEngine(callback) {
         subscribeCall(this, callback);
     }
-}
+};

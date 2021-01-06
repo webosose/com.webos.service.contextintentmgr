@@ -56,7 +56,7 @@ let stopAi = () => {
         "mode": "continuous",
         "keywordDetect": true
     });
-}
+};
 
 process.on('uncaughtException', (err) => {
     console.log("Error:uncaughtException ", err);

@@ -22,7 +22,7 @@ let initApi = (RED) => {
         message.payload.userDir = RED.settings.userDir;
         dynamicDataHandler.dataInjector(message.payload, message.sender, (result) => {
             message.respond(result);
-        })
+        });
     });
 
     // Data publisher API from a flow, to an app
@@ -31,10 +31,10 @@ let initApi = (RED) => {
         dynamicDataHandler.dataPublisher(message.payload, message.sender, (result) => {
             result.subscribed = message.isSubscription;
             message.respond(result);
-        })
+        });
     });
-}
+};
 //used in index.js
 module.exports = {
     initApi: initApi
-}
+};

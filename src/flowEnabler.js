@@ -43,21 +43,21 @@ let subscribe = (RED) => {
             if (previousAppId != "") {
                 disableFlows({
                     "appId": previousAppId
-                })
+                });
             }
             if (previousPublishedAppId != "") {
                 disablePublisher({
                     "appId": previousPublishedAppId
-                })
+                });
             }
         }
     });
-}
+};
 //used in dynamicDataHandler
 let setPublisherAppId = (appId) => {
     console.log("setPublisherAppId");
     previousPublishedAppId = appId;
-}
+};
 //triggered when need to enable flows of appId
 let enableFlows = (data) => {
     console.log("enableFlows : " + previousAppId);
@@ -71,8 +71,8 @@ let enableFlows = (data) => {
         })
         .catch((e) => {
             console.log(e);
-        })
-}
+        });
+};
 //triggered when need to enable flows of previousAppId
 let disableFlows = (data) => {
     console.log("disableFlows : " + previousAppId);
@@ -87,8 +87,8 @@ let disableFlows = (data) => {
         .catch((e) => {
             previousAppId = "";
             console.log(e);
-        })
-}
+        });
+};
 //reads manifest file and stores in global object
 let getManifestValues = (data) => {
     console.log("getManifestValues");
@@ -101,7 +101,7 @@ let getManifestValues = (data) => {
             reject("Error : manifest file require failed " + path);
         }
     });
-}
+};
 //triggered app is closed andPublisher is on
 let disablePublisher = (data) => {
     console.log("disablePublisher");
@@ -119,8 +119,8 @@ let disablePublisher = (data) => {
         .catch((e) => {
             previousPublishedAppId = "";
             console.log(e);
-        })
-}
+        });
+};
 //get disabled flowId from manifest data using appId
 let getDisabledFlows = (data) => {
     console.log("getDisabledFlows");
@@ -131,14 +131,14 @@ let getDisabledFlows = (data) => {
         } else {
             //else triggers when u try to launch builtin app / app which not have entry in manifest
             if (previousAppId == "") {
-                reject("No disabled flows available for appId : " + data.appId)
+                reject("No disabled flows available for appId : " + data.appId);
             } else {
                 data.disabled = [];
                 resolve(data);
             }
         }
     });
-}
+};
 //these steps used in both enable as well as disable flow
 let commonSteps = (data) => {
     return new Promise((resolve, reject) => {
@@ -152,13 +152,13 @@ let commonSteps = (data) => {
                 allFlowsFileAction.restartNodes(Red, data)
                     .then((data) => {
                         resolve(data);
-                    })
+                    });
             })
             .catch((e) => {
                 reject(e);
-            })
-    })
-}
+            });
+    });
+};
 //get the previous enabled flows to disable it, since app is closed
 let getPreviousEnabled = (data) => {
     console.log("getPreviousEnabled");
@@ -176,7 +176,7 @@ let getPreviousEnabled = (data) => {
             }
         }
     });
-}
+};
 //get .nodered/flows.json as allFlows
 let getAllFlows = (data) => {
     console.log("getAllFlows");
@@ -188,8 +188,8 @@ let getAllFlows = (data) => {
         } catch (e) {
             reject("Error : flowFile require failed - " + data.flowFilePath);
         }
-    })
-}
+    });
+};
 //loop through and enable present app flows and desable previous app flows
 let enableDisableTabs = (data) => {
     console.log("enableDisableTabs");
@@ -209,10 +209,10 @@ let enableDisableTabs = (data) => {
                 resolve(data);
             }
         });
-    })
-}
+    });
+};
 //used in flowInstaller.js
 module.exports = {
     subscribe: subscribe,
     setPublisherAppId: setPublisherAppId
-}
+};

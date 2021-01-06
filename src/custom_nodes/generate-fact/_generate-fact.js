@@ -56,12 +56,12 @@ function voiceRawDataHandler(enginePayload) {
         } else {
             return false;
         }
-    };
+    }
     response = enginePayload.response;
     returnObj.voice = parseData(response);
     return returnObj;
-};
+}
 
 module.exports = {
     voice: voiceRawDataHandler
-}
+};

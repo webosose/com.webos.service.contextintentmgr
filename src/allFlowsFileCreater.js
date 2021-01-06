@@ -39,7 +39,7 @@ let createAllFlowFile = (details) => {
             reject("Error : Failed to create allFlows json file ");
         }
     });
-}
+};
 //restarts flows by setFlow method
 let restartFlows = (Red, details) => {
     console.log('restartFlows');
@@ -53,7 +53,7 @@ let restartFlows = (Red, details) => {
             resolve(details);
         }
     });
-}
+};
 //restarts nodes by setFlow method
 let restartNodes = (Red, details) => {
     console.log('restartNodes');
@@ -63,10 +63,10 @@ let restartNodes = (Red, details) => {
         Red.nodes.setFlows(details.allFlows, "node");
         resolve(details);
     });
-}
+};
 //used in flowsEnabler.js,flowInstaller.js
 module.exports = {
     "createAllFlowFile": createAllFlowFile,
     "restartNodes": restartNodes,
     "restartFlows": restartFlows
-}
+};

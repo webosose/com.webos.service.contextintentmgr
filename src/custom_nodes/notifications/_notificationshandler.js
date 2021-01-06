@@ -16,8 +16,8 @@
 
 module.exports = class notificationLogic {
     constructor(service, config) {
-        this.service = service,
-            this.config = config
+        this.service = service;
+        this.config = config;
     }
     toast() {
         return new Promise(function (resolve, reject) {
@@ -34,4 +34,4 @@ module.exports = class notificationLogic {
                 });
         }.bind(this));
     }
-}
+};

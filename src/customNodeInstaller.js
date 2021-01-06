@@ -43,9 +43,9 @@ let addToPackage = (details) => {
             })
             .catch((err) => {
                 reject(err);
-            })
+            });
     });
-}
+};
 let removeFromPackage = (details) => {
     console.log("removeFromPackage");
     return new Promise((resolve, reject) => {
@@ -59,14 +59,13 @@ let removeFromPackage = (details) => {
                 })
                 .catch((err) => {
                     reject(err);
-                })
+                });
         } else {
             console.log("Node Names does not exists");
             resolve(details);
         }
     });
-
-}
+};
 let readCustomNodeDir = (details) => {
     console.log("readCustomNodeDir");
     return new Promise((resolve, reject) => {
@@ -77,16 +76,16 @@ let readCustomNodeDir = (details) => {
         } else {
             reject(result);
         }
-    })
-}
+    });
+};
 let readPackageJson = (details) => {
     console.log("readPackageJson");
     return new Promise((resolve, reject) => {
         details.packagePath = path.join(details.userDir, "package.json");
         details.nodePackage = fs.readJsonSync(details.packagePath);
         resolve(details);
-    })
-}
+    });
+};
 
 let nodePackageEntry = (details) => {
     console.log("nodePackageEntry");
@@ -101,8 +100,8 @@ let nodePackageEntry = (details) => {
             }
         });
         resolve(details);
-    })
-}
+    });
+};
 
 let nodePackageRemove = (details) => {
     console.log("nodePackageRemove");
@@ -112,8 +111,8 @@ let nodePackageRemove = (details) => {
             delete details.nodePackage.dependencies[node];
         });
         resolve(details);
-    })
-}
+    });
+};
 
 let writePackageJson = (details) => {
     console.log("writePackageJson");
@@ -123,8 +122,8 @@ let writePackageJson = (details) => {
         } else {
             reject("Error : Failed to recreate a package.json.");
         }
-    })
-}
+    });
+};
 let linkCustomNodes = (details) => {
     console.log("linkCustomNodes");
     return new Promise((resolve, reject) => {
@@ -137,8 +136,8 @@ let linkCustomNodes = (details) => {
             }
         });
         resolve(details);
-    })
-}
+    });
+};
 let unlinkCustomNodes = (details) => {
     console.log("unlinkCustomNodes");
     return new Promise((resolve, reject) => {
@@ -152,7 +151,7 @@ let unlinkCustomNodes = (details) => {
         });
         resolve(details);
     });
-}
+};
 
 let getLocalNodeFiles = (dir) => {
     console.log("getLocalNodeFiles");
@@ -179,7 +178,7 @@ let getLocalNodeFiles = (dir) => {
         } else if (stats.isDirectory()) {
             // Ignore /.dirs/, /lib/ /node_modules/
             if (!/^(\..*|lib|icons|node_modules|test|locales)$/.test(fn)) {
-                chainVal = getLocalNodeFiles(path.join(dir, fn))
+                chainVal = getLocalNodeFiles(path.join(dir, fn));
                 if (typeof chainVal == "object") {
                     result = result.concat(chainVal);
                 } else {
@@ -189,7 +188,7 @@ let getLocalNodeFiles = (dir) => {
         }
     });
     return result;
-}
+};
 let getLocalFile = (dir, fn) => {
     let file = path.join(dir, fn);
     try {
@@ -203,8 +202,8 @@ let getLocalFile = (dir, fn) => {
         console.log(err);
         return null;
     }
-}
+};
 module.exports = {
     addToPackage: addToPackage,
     removeFromPackage: removeFromPackage
-}
+};

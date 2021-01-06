@@ -91,7 +91,7 @@ let subscribe = (RED) => {
             }
         }
     });
-}
+};
 
 let writeJSONToDiskSync = (path, JSONData) => {
     let fd;
@@ -108,7 +108,7 @@ let writeJSONToDiskSync = (path, JSONData) => {
 // Creates Done file on Error, Ensure that process is completed
 let addDoneFile = () => {
     fs.ensureFile(userDir + "/" + DONE_FILE);
-}
+};
 //get called when state is installed, gets appinfo file from app installed path & trigger promise
 let flowInstaller = (input, callback) => {
     console.log("flowInstaller :");
@@ -141,7 +141,7 @@ let flowInstaller = (input, callback) => {
                 callback(result);
             } else {
                 if (err) {
-                    console.log("ERROR LOG ..............", err)
+                    console.log("ERROR LOG ..............", err);
                     logToPath(logPath, true, err);
                     addDoneFile();
                 } else {
@@ -168,7 +168,7 @@ let flowInstaller = (input, callback) => {
             "error": "Invalid params.."
         });
     }
-}
+};
 //triggered when state is removed, then initiates promise of remove flow
 let removeFlow = (packageId) => {
     console.log("removeFlow : packageId : ", packageId);
@@ -201,10 +201,10 @@ let removeFlow = (packageId) => {
         } else {
             console.log("Warning: App not having entry in manifest..");
             addDoneFile();
-            reject("Warning: App not having entry in manifest..")
+            reject("Warning: App not having entry in manifest..");
         }
     });
-}
+};
 //Since same steps are used in addFlow and flowInstaller, made a common class
 let doInstallation = (flowDetails, cb) => {
     checkValidJson(flowDetails)
@@ -216,19 +216,19 @@ let doInstallation = (flowDetails, cb) => {
                         cb();
                     }).catch((err) => {
                         cb(err);
-                    })
+                    });
             } else {
                 commonPromises(flowDetails)
                     .then(() => {
                         cb();
                     }).catch((err) => {
                         cb(err);
-                    })
+                    });
             }
         }).catch((err) => {
             cb(err);
-        })
-}
+        });
+};
 //get flow data of app, validates and collects disabled flow ids
 let checkValidJson = (flowDetails) => {
     return new Promise((resolve, reject) => {
@@ -245,14 +245,14 @@ let checkValidJson = (flowDetails) => {
                 flowDetails["data-injector-map"] = [];
                 flowDetails["data-publisher-keys"] = [];
                 flowDetails["data-publisher-map"] = [];
-                flowDetails["flowIdList"] = {};
-                flowDetails["flowIdList"][flowDetails.packageId] = {};
+                flowDetails.flowIdList = {};
+                flowDetails.flowIdList[flowDetails.packageId] = {};
                 // add the key here
                 flowDetails.flowData.forEach((node, index, array) => {
                     let newId = flowDetails.packageId + "_" + node.id;
                     flowDetails.flowData[index].id = newId;
                     if (node.type == "tab") {
-                        flowDetails["flowIdList"][flowDetails.packageId][newId] = node;
+                        flowDetails.flowIdList[flowDetails.packageId][newId] = node;
                         if (node.disabled) {
                             flowDetails.disabled.push(node.id);
                         }
@@ -290,7 +290,7 @@ let checkValidJson = (flowDetails) => {
             reject("Error : Invalid Path or flowFile : " + flowDetails.path);
         }
     });
-}
+};
 //used in doInstallation
 let commonPromises = (flowDetails) => {
     return new Promise((resolve, reject) => {
@@ -304,7 +304,7 @@ let commonPromises = (flowDetails) => {
                 reject(error);
             });
     });
-}
+};
 //create new json out of flow data in .nodered/allFlows directory with appId as name
 let createJSON = (flowDetails) => {
     return new Promise((resolve, reject) => {
@@ -315,7 +315,7 @@ let createJSON = (flowDetails) => {
             reject("Error : Failed to create a json : " + allPath);
         }
     });
-}
+};
 //will remove "appId".json from .nodered/allFlows directory
 let removeJSON = (flowDetails) => {
     console.log("removeJSON : packageId : " + flowDetails.packageId);
@@ -335,7 +335,7 @@ let removeJSON = (flowDetails) => {
             }
         });
     });
-}
+};
 //reads existing MANIFEST_FILE in .nodered dir, add new entry of installed app and saves
 let addToflowIdList = (flowDetails) => {
     return new Promise((resolve, reject) => {
@@ -348,14 +348,14 @@ let addToflowIdList = (flowDetails) => {
         } catch (e) {
             file = {};
         }
-        file[appName] = flowDetails["flowIdList"][appName];
+        file[appName] = flowDetails.flowIdList[appName];
         if (writeJSONToDiskSync(fileName, file)) {
             resolve(flowDetails);
         } else {
             reject("Error : Failed to create a json : " + allPath);
         }
     });
-}
+};
 //reads manifest file in .nodered dir removes uninstalled app entry and saves
 let removeFromflowIdList = (flowDetails) => {
     return new Promise((resolve, reject) => {
@@ -373,7 +373,7 @@ let removeFromflowIdList = (flowDetails) => {
             reject("Error : No entry in flowIdList file found...");
         }
     });
-}
+};
 //reads existing MANIFEST_FILE in .nodered dir, add new entry of installed app and saves
 let addToManifest = (flowDetails) => {
     return new Promise((resolve, reject) => {
@@ -405,7 +405,7 @@ let addToManifest = (flowDetails) => {
             reject("Error : Failed to create a json : " + allPath);
         }
     });
-}
+};
 //reads manifest file in .nodered dir removes uninstalled app entry and saves
 let removeFromManifest = (flowDetails) => {
     return new Promise((resolve, reject) => {
@@ -426,7 +426,7 @@ let removeFromManifest = (flowDetails) => {
             reject("Error : No entry in manifest file found...");
         }
     });
-}
+};
 //its common flow for both installed and removed flow, also called whenever service starts,
 // to create new flows.json from app flows present in .nodered/allFlows directory
 let createNewCombinedFlow = (flowDetails) => {
@@ -452,7 +452,7 @@ let createNewCombinedFlow = (flowDetails) => {
                 reject(error);
             });
     });
-}
+};
 //reads .nodered/allFlows directory concat all flows into single json.
 let concatFlows = (flowDetails) => {
     return new Promise((resolve, reject) => {
@@ -482,7 +482,7 @@ let concatFlows = (flowDetails) => {
                 }
                 flows.forEach((flow, index, array) => {
                     appid = flow.replace(".json", "");
-                    let obj = fs.readJsonSync(allPath + flow)
+                    let obj = fs.readJsonSync(allPath + flow);
                     if (obj != null) {
                         let disabledArr, alwaysDisabledArr;
                         if (flowIdListObj[appid] && manifestObj[appid]) {
@@ -535,7 +535,7 @@ let concatFlows = (flowDetails) => {
             reject("Error : concatFlows failed due to ", e);
         }
     });
-}
+};
 //whenever a new app installed or removed backup existing combined flows, as precoution
 let backupAllFlowFile = (flowDetails) => {
     return new Promise((resolve, reject) => {
@@ -554,17 +554,17 @@ let backupAllFlowFile = (flowDetails) => {
                     }, err => {
                         if (err) console.log(err);
                         resolve(flowDetails);
-                    })
+                    });
                 } else {
                     resolve(flowDetails);
                 }
             });
         }
     });
-}
+};
 //used in main.js
 module.exports = {
     subscribe: subscribe,
     getAllFlows: createNewCombinedFlow,
     flowInstaller: flowInstaller
-}
+};

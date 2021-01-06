@@ -79,7 +79,7 @@ var publishDataForInjection = (input) => {
         try {
             if (!_pubsub.publish(input.subscriptionKey, input)) {
                 _pubsub.localStorage[input.subscriptionKey] = input;
-            };
+            }
             resolve({
                 "data": input.data
             });
@@ -96,13 +96,13 @@ var dataInjector = (input, appId, callback) => {
             callback({
                 "returnValue": true,
                 "result": result
-            })
+            });
         }).catch(err => {
             callback({
                 "returnValue": false,
                 "errorCode": 0,
                 "errorText": err
-            })
+            });
         });
 };
 
@@ -126,11 +126,11 @@ var dataPublisher = (input, appId, callback) => {
                 "returnValue": false,
                 "errorCode": 0,
                 "errorText": err
-            })
+            });
         });
 };
 
 module.exports = {
     dataInjector: dataInjector,
     dataPublisher: dataPublisher
-}
+};
