@@ -1,3 +1,3 @@
 {
-    "com.webos.service.contextintentmgr": ["configd.internal","applicationinstall.management", "applicationmanager.sdk", "ai.face", "ai.gesture","ai.voice","activities.callbacks", "application.devmode", "ai.control", "ai.consumer", "ai.management", "notification.operation", "application.operation", "application.launcher"]
+    "com.webos.service.contextintentmgr": ["applicationinstall.management", "ai.voice", "application.devmode", "ai.management", "notification.operation", "application.operation", "application.launcher"]
 }
