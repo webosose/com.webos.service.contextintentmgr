@@ -8,6 +8,9 @@
         "node-red",
         "node-red CIM"
     ],
+    "jshintConfig": {
+        "esversion": 6
+    },
     "author": "LG Electronics",
     "license": "Apache-2.0",
     "dependencies": {
