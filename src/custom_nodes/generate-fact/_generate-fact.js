@@ -1,4 +1,4 @@
-// Copyright (c) 2019 LG Electronics, Inc.
+// Copyright (c) 2022 LG Electronics, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ function voiceRawDataHandler(enginePayload) {
             let paylpad = voiceResponse.deviceAction.inputs[0].payload;
             deviceAction.intent = paylpad.commands[0].execution[0].command;
             deviceAction.entity = paylpad.commands[0].execution[0].params;
+            return deviceAction;
         } else if (voiceResponse.hasOwnProperty("displayText")) {
             let displayText = voiceResponse.displayText;
             if (displayText == "") {
