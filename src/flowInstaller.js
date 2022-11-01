@@ -172,6 +172,10 @@ let flowInstaller = (input, callback) => {
 //triggered when state is removed, then initiates promise of remove flow
 let removeFlow = (packageId) => {
     console.log("removeFlow : packageId : ", packageId);
+    process.on('unhandledRejection', error => {
+      // Prints "unhandledRejection message!"
+      console.log(error.message);
+    });
     return new Promise((resolve, reject) => {
         let flowDetails = {
             "packageId": packageId,
@@ -199,9 +203,9 @@ let removeFlow = (packageId) => {
                     reject(error);
                 });
         } else {
-            console.log("Warning: App not having entry in manifest..");
             addDoneFile();
-            reject("Warning: App not having entry in manifest..");
+            //Donot throw exception when packageId is empty or undefined. gracefully exit.
+            reject({ message: 'Warning: App not having entry in manifest..Gracefully exited.' });
         }
     });
 };
