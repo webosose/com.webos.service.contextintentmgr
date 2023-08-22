@@ -39,6 +39,5 @@ install(DIRECTORY . DESTINATION ${INSTALL_DIR}
         PATTERN "tempdb" EXCLUDE
         PATTERN "*.qmlproject" EXCLUDE
         PATTERN "README.md" EXCLUDE)
-install(DIRECTORY files/systemd/services/ DESTINATION /lib/systemd/system/)
 
 webos_build_system_bus_files()
